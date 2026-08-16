@@ -1,8 +1,11 @@
 <template>
   <AdminLayout v-if="user">
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4)">
+    <div
+      class="page-header"
+      style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
+    >
       <h1>{{ user.nome }} {{ user.cognome }}</h1>
-      <div style="display: flex; gap: var(--space-3)">
+      <div class="user-row-actions">
         <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
           >Nuova spesa</router-link
         >

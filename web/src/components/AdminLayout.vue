@@ -4,7 +4,7 @@
       <router-link to="/admin/users" class="brand-mark">FIGHT <span>HOUSE</span></router-link>
       <nav>
         <router-link to="/admin/users">Utenti</router-link>
-        <button type="button" class="btn btn-secondary" @click="logout">Esci</button>
+        <button type="button" class="btn btn-secondary btn-sm" @click="logout">Esci</button>
       </nav>
     </header>
     <main class="container">

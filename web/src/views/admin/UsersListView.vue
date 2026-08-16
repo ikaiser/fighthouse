@@ -1,6 +1,9 @@
 <template>
   <AdminLayout>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)">
+    <div
+      class="page-header"
+      style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
+    >
       <h1>Utenti</h1>
       <router-link to="/admin/users/new" class="btn btn-primary">Nuovo utente</router-link>
     </div>
@@ -12,18 +15,13 @@
 
     <div class="card">
       <ul>
-        <li
-          v-for="u in users"
-          :key="u.id"
-          class="list-item"
-          style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
-        >
+        <li v-for="u in users" :key="u.id" class="list-item user-row">
           <div>
             <router-link :to="`/admin/users/${u.id}`">{{ u.nome }} {{ u.cognome }}</router-link>
             <span class="hint"> — {{ u.telefono }}</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0">
+          <div class="user-row-actions">
             <span class="amount amount-positive">{{ u.wallet_balance }}€</span>
             <router-link :to="`/admin/users/${u.id}`" class="btn btn-secondary btn-sm">Vedi</router-link>
             <router-link :to="`/admin/users/${u.id}/edit`" class="btn btn-secondary btn-sm"
