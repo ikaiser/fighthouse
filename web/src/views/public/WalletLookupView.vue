@@ -27,7 +27,7 @@
           <h2 style="margin-top: 0">Storico movimenti</h2>
           <ul>
             <li v-for="(t, i) in result.transactions" :key="i" class="list-item">
-              <span class="hint">{{ t.created_at }}</span> — {{ t.tipo }}
+              <span class="hint">{{ formatDateTime(t.created_at) }}</span> — {{ t.tipo }}
               <span
                 class="amount"
                 :class="t.importo >= 0 ? 'amount-positive' : 'amount-negative'"
@@ -47,6 +47,7 @@
 <script setup>
 import { ref } from 'vue'
 import { apiClient } from '../../api/client'
+import { formatDateTime } from '../../utils/date'
 
 const telefono = ref('')
 const result = ref(null)

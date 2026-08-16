@@ -1,6 +1,9 @@
 <template>
   <AdminLayout v-if="user">
-    <h1>{{ user.nome }} {{ user.cognome }}</h1>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4)">
+      <h1>{{ user.nome }} {{ user.cognome }}</h1>
+      <router-link :to="`/admin/users/${user.id}/edit`" class="btn btn-secondary">Modifica</router-link>
+    </div>
     <p class="hint">Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
 
     <div class="balance-hero" style="margin: var(--space-5) 0">
@@ -16,7 +19,7 @@
     <div class="card">
       <ul>
         <li v-for="(t, i) in wallet.transactions" :key="i" class="list-item">
-          <span class="hint">{{ t.created_at }}</span> — {{ t.tipo }}
+          <span class="hint">{{ formatDateTime(t.created_at) }}</span> — {{ t.tipo }}
           <span
             class="amount"
             :class="t.importo >= 0 ? 'amount-positive' : 'amount-negative'"
@@ -33,7 +36,7 @@
     <div class="card">
       <ul>
         <li v-for="e in expenses" :key="e.id" class="list-item">
-          {{ e.data_spesa }} — {{ e.importo }}€
+          {{ formatDate(e.data_spesa) }} — {{ e.importo }}€
           <span v-if="e.wallet_usato > 0" class="hint"> (wallet usato: {{ e.wallet_usato }}€)</span>
         </li>
         <li v-if="!expenses.length" class="list-item hint">Nessuna spesa registrata.</li>
@@ -47,6 +50,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
+import { formatDate, formatDateTime } from '../../utils/date'
 
 const route = useRoute()
 const user = ref(null)
