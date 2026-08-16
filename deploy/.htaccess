@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Instrada le richieste /api/* verso il front controller di Slim
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ api/public/index.php [QSA,L]
+
+# Fallback SPA: tutte le altre richieste non corrispondenti a file/cartelle esistenti vanno a index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^ index.html [L]
