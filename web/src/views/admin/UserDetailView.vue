@@ -9,7 +9,7 @@
         <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
           >Nuova spesa</router-link
         >
-        <router-link :to="`/admin/users/${user.id}/edit`" class="btn btn-secondary">Modifica</router-link>
+        <button type="button" class="btn btn-secondary" @click="editUser">Modifica</button>
       </div>
     </div>
     <p class="hint">Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
@@ -38,6 +38,7 @@ import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
 import { formatDate } from '../../utils/date'
+import { openUserForm } from '../../composables/useUserFormModal'
 
 const route = useRoute()
 const user = ref(null)
@@ -55,4 +56,9 @@ onMounted(async () => {
   wallet.value = walletRes.data
   expenses.value = expensesRes.data
 })
+
+async function editUser() {
+  const updated = await openUserForm(user.value.id)
+  if (updated) user.value = updated
+}
 </script>

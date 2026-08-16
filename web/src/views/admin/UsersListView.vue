@@ -5,7 +5,7 @@
       style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
     >
       <h1>Utenti</h1>
-      <router-link to="/admin/users/new" class="btn btn-primary">Nuovo utente</router-link>
+      <button type="button" class="btn btn-primary" @click="createUser">Nuovo utente</button>
     </div>
 
     <div class="field">
@@ -38,7 +38,7 @@
                   >
                   <ActionMenu label="Azioni">
                     <router-link :to="`/admin/users/${u.id}`">Vedi</router-link>
-                    <router-link :to="`/admin/users/${u.id}/edit`">Modifica</router-link>
+                    <button type="button" @click="editUser(u)">Modifica</button>
                     <button type="button" class="danger" @click="deleteUser(u)">Elimina</button>
                   </ActionMenu>
                 </div>
@@ -60,6 +60,7 @@ import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
 import ActionMenu from '../../components/ActionMenu.vue'
 import { confirmDialog } from '../../composables/useConfirm'
+import { openUserForm } from '../../composables/useUserFormModal'
 
 const users = ref([])
 const search = ref('')
@@ -67,6 +68,16 @@ const search = ref('')
 async function load() {
   const { data } = await apiClient.get('/users', { params: { q: search.value || undefined } })
   users.value = data
+}
+
+async function createUser() {
+  const user = await openUserForm(null)
+  if (user) await load()
+}
+
+async function editUser(u) {
+  const updated = await openUserForm(u.id)
+  if (updated) await load()
 }
 
 async function deleteUser(u) {
