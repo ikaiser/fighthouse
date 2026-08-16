@@ -20,14 +20,14 @@ function bootstrapApp(): \Slim\App
 
     $capsule = new Capsule();
     $capsule->addConnection([
-        'driver' => 'mysql',
+        'driver' => 'pgsql',
         'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
-        'port' => $_ENV['DB_PORT'] ?? '3306',
+        'port' => $_ENV['DB_PORT'] ?? '5432',
         'database' => $_ENV['DB_DATABASE'] ?? 'fighthouse',
-        'username' => $_ENV['DB_USERNAME'] ?? 'root',
+        'username' => $_ENV['DB_USERNAME'] ?? 'postgres',
         'password' => $_ENV['DB_PASSWORD'] ?? '',
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
+        'charset' => 'utf8',
+        'schema' => 'public',
     ]);
     $capsule->setAsGlobal();
     $capsule->bootEloquent();

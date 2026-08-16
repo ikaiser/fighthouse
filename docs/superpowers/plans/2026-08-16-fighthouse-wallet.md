@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a working backend API (Slim 4 + Eloquent + MySQL) and admin/public SPA (Vue 3 + Vite) that lets an admin censire utenti, registrare spese con accredito automatico del 5% su un wallet, scaricare il wallet in blocchi da 25€, e lasciare che l'utente finale consulti saldo/storico da cellulare tramite numero di telefono.
+**Goal:** Build a working backend API (Slim 4 + Eloquent + PostgreSQL) and admin/public SPA (Vue 3 + Vite) that lets an admin censire utenti, registrare spese con accredito automatico del 5% su un wallet, scaricare il wallet in blocchi da 25€, e lasciare che l'utente finale consulti saldo/storico da cellulare tramite numero di telefono.
 
 **Architecture:** Backend REST API sotto `api/`, stateless tranne la sessione admin (cookie PHP nativo). Business logic critica (accredito/scarico/rettifica) isolata in un `WalletService` testato con PHPUnit. Frontend SPA sotto `web/`, compilata staticamente e servita dallo stesso dominio, con due macro-aree: `/admin/*` (autenticata) e `/wallet` (pubblica).
 
-**Tech Stack:** PHP 8.1+, Slim 4, illuminate/database (Eloquent standalone), Phinx (migrazioni), PHPUnit, MySQL. Vue 3, Vite, Vue Router, Pinia, axios.
+**Tech Stack:** PHP 8.1+, Slim 4, illuminate/database (Eloquent standalone), Phinx (migrazioni), PHPUnit, PostgreSQL. Vue 3, Vite, Vue Router, Pinia, axios.
 
 **Spec:** `docs/superpowers/specs/2026-08-16-fighthouse-wallet-design.md`
 
@@ -140,7 +140,7 @@ function bootstrapApp(): \Slim\App
 
     $capsule = new Capsule();
     $capsule->addConnection([
-        'driver' => 'mysql',
+        'driver' => 'pgsql',
         'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
         'port' => $_ENV['DB_PORT'] ?? '3306',
         'database' => $_ENV['DB_DATABASE'] ?? 'fighthouse',
@@ -243,7 +243,7 @@ git commit -m "Scaffold Slim API with health check endpoint"
 - Create: `api/db/migrations/20260816000004_create_wallet_transactions_table.php`
 
 **Interfaces:**
-- Produces: tabelle MySQL `admins`, `users`, `expenses`, `wallet_transactions` come da spec (sezione "Modello dati"), usate dai modelli Eloquent nel Task 3.
+- Produces: tabelle PostgreSQL `admins`, `users`, `expenses`, `wallet_transactions` come da spec (sezione "Modello dati"), usate dai modelli Eloquent nel Task 3.
 
 - [ ] **Step 1: Creare `api/phinx.php`**
 
@@ -264,7 +264,7 @@ return [
         'default_migration_table' => 'phinxlog',
         'default_environment' => 'production',
         'production' => [
-            'adapter' => 'mysql',
+            'adapter' => 'pgsql',
             'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
             'name' => $_ENV['DB_DATABASE'] ?? 'fighthouse',
             'user' => $_ENV['DB_USERNAME'] ?? 'root',
@@ -369,7 +369,7 @@ final class CreateWalletTransactionsTable extends AbstractMigration
         $table
             ->addColumn('user_id', 'integer')
             ->addColumn('expense_id', 'integer', ['null' => true])
-            ->addColumn('tipo', 'enum', ['values' => ['accredito', 'scarico', 'rettifica']])
+            ->addColumn('tipo', 'string', ['limit' => 20])
             ->addColumn('importo', 'decimal', ['precision' => 10, 'scale' => 2])
             ->addColumn('saldo_dopo', 'decimal', ['precision' => 10, 'scale' => 2])
             ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
@@ -377,6 +377,8 @@ final class CreateWalletTransactionsTable extends AbstractMigration
             ->addIndex(['expense_id'])
             ->addForeignKey('user_id', 'users', 'id', ['delete' => 'CASCADE'])
             ->create();
+
+        $this->execute("ALTER TABLE wallet_transactions ADD CONSTRAINT wallet_transactions_tipo_check CHECK (tipo IN ('accredito', 'scarico', 'rettifica'))");
     }
 }
 ```
@@ -506,7 +508,7 @@ class WalletTransaction extends Model
 }
 ```
 
-Nota: `WalletTransaction` non ha `updated_at`; `created_at` viene popolato dal default MySQL `CURRENT_TIMESTAMP`, non da Eloquent.
+Nota: `WalletTransaction` non ha `updated_at`; `created_at` viene popolato dal default PostgreSQL `CURRENT_TIMESTAMP`, non da Eloquent.
 
 - [ ] **Step 5: Scrivere il test dei modelli**
 
@@ -2397,11 +2399,11 @@ RewriteRule ^ index.html [L]
 ```markdown
 # Fighthouse
 
-Backend Slim 4 + Eloquent + MySQL, SPA Vue 3 + Vite.
+Backend Slim 4 + Eloquent + PostgreSQL, SPA Vue 3 + Vite.
 
 ## Sviluppo locale
 
-1. `cp api/.env.example api/.env` e inserire le credenziali del MySQL locale.
+1. `cp api/.env.example api/.env` e inserire le credenziali del PostgreSQL locale.
 2. `cd api && composer install && vendor/bin/phinx migrate`
 3. `cd api && php bin/seed-admin.php admin <password>`
 4. `cd api && php -S 127.0.0.1:8080 -t public`
@@ -2412,7 +2414,7 @@ Backend Slim 4 + Eloquent + MySQL, SPA Vue 3 + Vite.
 
 1. In locale: `cd api && composer install --no-dev` (genera `vendor/` senza dipendenze di sviluppo).
 2. In locale: `cd web && npm run build` (genera `web/dist/`).
-3. Creare il database MySQL dal pannello cPanel e aggiornare `api/.env` con le credenziali reali.
+3. Creare il database PostgreSQL dal pannello cPanel e aggiornare `api/.env` con le credenziali reali.
 4. Eseguire le migrazioni contro il DB di produzione: `cd api && vendor/bin/phinx migrate` (da locale, se il DB è raggiungibile dall'esterno, oppure da un accesso SSH temporaneo se disponibile).
 5. Eseguire `php bin/seed-admin.php <username> <password>` per creare il primo account admin.
 6. Via FTP, caricare nella document root del dominio:

@@ -16,14 +16,14 @@ SSH/Docker necessari in produzione).
 
 - **Backend/API**: PHP 8.1+, [Slim 4](https://www.slimframework.com/) per il
   routing REST, [Eloquent](https://github.com/illuminate/database) (illuminate/database
-  standalone) come ORM/query builder, MySQL come database.
+  standalone) come ORM/query builder, PostgreSQL come database.
 - **Frontend**: Vue 3 + Vite, SPA compilata staticamente (`npm run build`) e
   caricata come asset statico sullo stesso dominio dell'API.
 - **Deploy**: build locale (Composer per il backend, npm/Vite per il
   frontend), upload via FTP di `dist/` (SPA) e della cartella API (incluso
   `vendor/`) sull'hosting. Non serve accesso SSH né Composer/Node lato server.
 
-## Modello dati (MySQL)
+## Modello dati (PostgreSQL)
 
 ### `admins`
 Singolo accesso condiviso all'area amministrativa (in tabella, non
@@ -31,39 +31,39 @@ hardcoded, per poter cambiare la password senza toccare il codice).
 
 | campo | tipo | note |
 |---|---|---|
-| id | INT PK AUTO_INCREMENT | |
+| id | SERIAL PK | |
 | username | VARCHAR(255) UNIQUE | |
 | password_hash | VARCHAR(255) | bcrypt/password_hash() |
-| created_at | DATETIME | |
+| created_at | TIMESTAMP | |
 
 ### `users`
 Gli utenti/clienti censiti.
 
 | campo | tipo | note |
 |---|---|---|
-| id | INT PK AUTO_INCREMENT | |
+| id | SERIAL PK | |
 | nome | VARCHAR(255) | |
 | cognome | VARCHAR(255) | |
 | telefono | VARCHAR(32) UNIQUE | usato anche come identificativo di login pubblico |
 | email | VARCHAR(255) | |
 | data_nascita | DATE | |
 | wallet_balance | DECIMAL(10,2) DEFAULT 0 | cache del saldo, ricavabile anche da SUM(wallet_transactions.importo) |
-| created_at | DATETIME | |
-| updated_at | DATETIME | |
+| created_at | TIMESTAMP | |
+| updated_at | TIMESTAMP | |
 
 ### `expenses`
 Le spese registrate per un utente.
 
 | campo | tipo | note |
 |---|---|---|
-| id | INT PK AUTO_INCREMENT | |
+| id | SERIAL PK | |
 | user_id | INT FK -> users.id | |
 | importo | DECIMAL(10,2) | importo lordo della spesa, > 0 |
 | wallet_usato | DECIMAL(10,2) DEFAULT 0 | quanto wallet è stato scalato su questa spesa |
 | data_spesa | DATE | |
 | note | VARCHAR(500) NULL | opzionale |
-| created_at | DATETIME | |
-| updated_at | DATETIME | |
+| created_at | TIMESTAMP | |
+| updated_at | TIMESTAMP | |
 
 ### `wallet_transactions`
 Ledger immutabile dei movimenti wallet: ogni accredito, scarico o rettifica.
@@ -72,13 +72,13 @@ cancellata.
 
 | campo | tipo | note |
 |---|---|---|
-| id | INT PK AUTO_INCREMENT | |
+| id | SERIAL PK | |
 | user_id | INT FK -> users.id | |
 | expense_id | INT FK -> expenses.id NULL | nullable: una rettifica di storno resta anche se la spesa viene eliminata |
 | tipo | ENUM('accredito','scarico','rettifica') | |
 | importo | DECIMAL(10,2) | con segno: positivo = accredito, negativo = scarico/rettifica negativa |
 | saldo_dopo | DECIMAL(10,2) | snapshot del saldo progressivo dopo il movimento |
-| created_at | DATETIME | |
+| created_at | TIMESTAMP | |
 
 ## Logica di business
 
@@ -175,7 +175,7 @@ spesa originale.
 3. `.htaccess` nella document root: instrada le richieste `/api/*` verso lo
    script di bootstrap di Slim; per tutte le altre rotte, fallback su
    `index.html` (necessario per il client-side routing di Vue).
-4. Il database MySQL viene creato via pannello cPanel; le migrazioni Eloquent
+4. Il database PostgreSQL viene creato via pannello cPanel; le migrazioni Eloquent
    vengono eseguite una tantum (script CLI dedicato, eseguibile anche senza
    SSH tramite un endpoint protetto una tantum o eseguendo lo script in
    locale contro il DB remoto se esposto).
