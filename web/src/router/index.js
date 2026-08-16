@@ -3,12 +3,14 @@ import { useAuthStore } from '../stores/auth'
 import LoginView from '../views/admin/LoginView.vue'
 import UsersListView from '../views/admin/UsersListView.vue'
 import UserDetailView from '../views/admin/UserDetailView.vue'
+import ExpenseFormView from '../views/admin/ExpenseFormView.vue'
 
 const routes = [
   { path: '/admin/login', component: LoginView },
   { path: '/admin', redirect: '/admin/users' },
   { path: '/admin/users', component: UsersListView },
   { path: '/admin/users/:id', component: UserDetailView },
+  { path: '/admin/expenses/new', component: ExpenseFormView },
 ]
 
 export const router = createRouter({
