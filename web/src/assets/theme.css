@@ -1,0 +1,372 @@
+:root {
+  --bg: #0b0b0c;
+  --surface: #17171a;
+  --surface-2: #1f1f23;
+  --border: #2e2e33;
+  --text: #f5f5f5;
+  --text-muted: #a1a1aa;
+  --brand: #e11d2e;
+  --brand-hover: #ff2a3d;
+  --on-brand: #ffffff;
+  --success: #22c55e;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0 0 var(--space-4);
+}
+
+h1 {
+  font-size: 40px;
+}
+
+h2 {
+  font-size: 24px;
+  color: var(--text-muted);
+  margin-top: var(--space-6);
+}
+
+p {
+  margin: 0 0 var(--space-3);
+}
+
+a {
+  color: var(--brand);
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Layout */
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.container-narrow {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.screen-center {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+/* Cards */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--brand-hover);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Forms */
+
+.field {
+  margin-bottom: var(--space-4);
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.field input[type='text'],
+.field input[type='email'],
+.field input[type='tel'],
+.field input[type='password'],
+.field input[type='date'],
+.field input[type='number'] {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 16px;
+  font-family: var(--font-body);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.25);
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.field-checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.error {
+  color: var(--brand-hover);
+  font-size: 14px;
+  margin-top: var(--space-2);
+}
+
+/* Brand wordmark */
+
+.brand-mark {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.brand-mark span {
+  color: var(--brand);
+}
+
+/* Amounts */
+
+.amount {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+}
+
+.amount-positive {
+  color: var(--success);
+}
+
+.amount-negative {
+  color: var(--text-muted);
+}
+
+/* Wallet balance hero (torn paper motif) */
+
+.balance-hero {
+  position: relative;
+  background: var(--brand);
+  color: var(--on-brand);
+  padding: var(--space-6) var(--space-5) var(--space-8);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 92%,
+    96% 100%,
+    92% 90%,
+    88% 100%,
+    84% 92%,
+    80% 100%,
+    76% 90%,
+    72% 100%,
+    68% 92%,
+    64% 100%,
+    60% 90%,
+    56% 100%,
+    52% 92%,
+    48% 100%,
+    44% 90%,
+    40% 100%,
+    36% 92%,
+    32% 100%,
+    28% 90%,
+    24% 100%,
+    20% 92%,
+    16% 100%,
+    12% 90%,
+    8% 100%,
+    4% 92%,
+    0 100%
+  );
+}
+
+.balance-hero .balance-label {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.balance-hero .balance-value {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 1;
+  margin-top: var(--space-2);
+}
+
+/* Admin layout */
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-topbar nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.admin-topbar nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-topbar nav a:hover {
+  color: var(--text);
+}
+
+/* Lists */
+
+.list-item {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.list-item a:hover {
+  color: var(--brand);
+}

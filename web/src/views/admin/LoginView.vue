@@ -1,12 +1,29 @@
 <template>
-  <div class="login">
-    <h1>Accesso amministratore</h1>
-    <form @submit.prevent="submit">
-      <input v-model="username" placeholder="Username" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <button type="submit" :disabled="loading">Accedi</button>
-      <p v-if="error" class="error">{{ error }}</p>
-    </form>
+  <div class="screen-center">
+    <div class="card" style="width: 100%; max-width: 380px">
+      <p class="brand-mark" style="margin-bottom: var(--space-2)">FIGHT <span>HOUSE</span></p>
+      <h1 style="font-size: 28px">Accesso amministratore</h1>
+      <form @submit.prevent="submit">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" v-model="username" type="text" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
+          {{ loading ? 'Accesso in corso…' : 'Accedi' }}
+        </button>
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+    </div>
   </div>
 </template>
 

@@ -1,32 +1,44 @@
 <template>
-  <div class="expense-form">
+  <AdminLayout>
     <h1>Nuova spesa</h1>
-    <form @submit.prevent="submit">
-      <label>Importo (€)</label>
-      <input v-model.number="importo" type="number" step="0.01" min="0.01" required />
 
-      <label>Data</label>
-      <input v-model="dataSpesa" type="date" required />
+    <div class="card" style="max-width: 480px">
+      <form @submit.prevent="submit">
+        <div class="field">
+          <label for="importo">Importo (€)</label>
+          <input id="importo" v-model.number="importo" type="number" step="0.01" min="0.01" required />
+        </div>
 
-      <label>Note</label>
-      <input v-model="note" placeholder="opzionale" />
+        <div class="field">
+          <label for="data_spesa">Data</label>
+          <input id="data_spesa" v-model="dataSpesa" type="date" required />
+        </div>
 
-      <label v-if="maxRedeemable > 0">
-        <input type="checkbox" v-model="useWallet" />
-        Usa {{ maxRedeemable }}€ di wallet accumulato
-      </label>
-      <p v-else class="hint">Nessun blocco da 25€ disponibile per lo scarico wallet al momento.</p>
+        <div class="field">
+          <label for="note">Note</label>
+          <input id="note" v-model="note" type="text" placeholder="opzionale" />
+        </div>
 
-      <button type="submit">Registra spesa</button>
-      <p v-if="error" class="error">{{ error }}</p>
-    </form>
-  </div>
+        <div v-if="maxRedeemable > 0" class="field field-checkbox">
+          <input id="use_wallet" type="checkbox" v-model="useWallet" />
+          <label for="use_wallet" style="margin: 0; text-transform: none; font-size: 14px; color: var(--text)">
+            Usa <span class="amount amount-positive">{{ maxRedeemable }}€</span> di wallet accumulato
+          </label>
+        </div>
+        <p v-else class="hint">Nessun blocco da 25€ disponibile per lo scarico wallet al momento.</p>
+
+        <button type="submit" class="btn btn-primary">Registra spesa</button>
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+    </div>
+  </AdminLayout>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from '../../api/client'
+import AdminLayout from '../../components/AdminLayout.vue'
 
 const route = useRoute()
 const router = useRouter()

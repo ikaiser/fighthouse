@@ -1,22 +1,45 @@
 <template>
-  <div class="wallet-lookup">
-    <h1>Il tuo wallet</h1>
-    <form @submit.prevent="lookup">
-      <input v-model="telefono" placeholder="Numero di telefono" required />
-      <button type="submit">Vedi saldo</button>
-    </form>
+  <div class="screen-center">
+    <div class="container-narrow" style="width: 100%; padding: var(--space-5) 0">
+      <p class="brand-mark" style="text-align: center; margin-bottom: var(--space-5)">
+        FIGHT <span>HOUSE</span>
+      </p>
 
-    <p v-if="error" class="error">{{ error }}</p>
+      <div class="card">
+        <h1 style="font-size: 24px">Il tuo wallet</h1>
+        <form @submit.prevent="lookup">
+          <div class="field">
+            <label for="telefono">Numero di telefono</label>
+            <input id="telefono" v-model="telefono" type="tel" required autocomplete="tel" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Vedi saldo</button>
+        </form>
+        <p v-if="error" class="error">{{ error }}</p>
+      </div>
 
-    <div v-if="result">
-      <h2>Ciao {{ result.nome }}!</h2>
-      <p class="balance">Saldo wallet: <strong>{{ result.wallet_balance }}€</strong></p>
-      <h3>Storico movimenti</h3>
-      <ul>
-        <li v-for="(t, i) in result.transactions" :key="i">
-          {{ t.created_at }} — {{ t.tipo }}: {{ t.importo }}€
-        </li>
-      </ul>
+      <div v-if="result" style="margin-top: var(--space-5)">
+        <div class="balance-hero">
+          <p class="balance-label">Ciao {{ result.nome }}, il tuo saldo è</p>
+          <p class="balance-value">{{ result.wallet_balance }}€</p>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-5)">
+          <h2 style="margin-top: 0">Storico movimenti</h2>
+          <ul>
+            <li v-for="(t, i) in result.transactions" :key="i" class="list-item">
+              <span class="hint">{{ t.created_at }}</span> — {{ t.tipo }}
+              <span
+                class="amount"
+                :class="t.importo >= 0 ? 'amount-positive' : 'amount-negative'"
+                style="float: right"
+              >
+                {{ t.importo >= 0 ? '+' : '' }}{{ t.importo }}€
+              </span>
+            </li>
+            <li v-if="!result.transactions.length" class="list-item hint">Nessun movimento.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>

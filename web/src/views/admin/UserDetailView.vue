@@ -1,30 +1,52 @@
 <template>
-  <div v-if="user" class="user-detail">
+  <AdminLayout v-if="user">
     <h1>{{ user.nome }} {{ user.cognome }}</h1>
-    <p>Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
-    <p class="balance">Saldo wallet: <strong>{{ wallet.wallet_balance }}€</strong></p>
-    <router-link :to="`/admin/expenses/new?user_id=${user.id}`">Nuova spesa</router-link>
+    <p class="hint">Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
+
+    <div class="balance-hero" style="margin: var(--space-5) 0">
+      <p class="balance-label">Saldo wallet</p>
+      <p class="balance-value">{{ wallet.wallet_balance }}€</p>
+    </div>
+
+    <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
+      >Nuova spesa</router-link
+    >
 
     <h2>Storico movimenti wallet</h2>
-    <ul>
-      <li v-for="(t, i) in wallet.transactions" :key="i">
-        {{ t.created_at }} — {{ t.tipo }}: {{ t.importo }}€ (saldo dopo: {{ t.saldo_dopo }}€)
-      </li>
-    </ul>
+    <div class="card">
+      <ul>
+        <li v-for="(t, i) in wallet.transactions" :key="i" class="list-item">
+          <span class="hint">{{ t.created_at }}</span> — {{ t.tipo }}
+          <span
+            class="amount"
+            :class="t.importo >= 0 ? 'amount-positive' : 'amount-negative'"
+            style="float: right"
+          >
+            {{ t.importo >= 0 ? '+' : '' }}{{ t.importo }}€
+          </span>
+        </li>
+        <li v-if="!wallet.transactions.length" class="list-item hint">Nessun movimento.</li>
+      </ul>
+    </div>
 
     <h2>Storico spese</h2>
-    <ul>
-      <li v-for="e in expenses" :key="e.id">
-        {{ e.data_spesa }} — {{ e.importo }}€ (wallet usato: {{ e.wallet_usato }}€)
-      </li>
-    </ul>
-  </div>
+    <div class="card">
+      <ul>
+        <li v-for="e in expenses" :key="e.id" class="list-item">
+          {{ e.data_spesa }} — {{ e.importo }}€
+          <span v-if="e.wallet_usato > 0" class="hint"> (wallet usato: {{ e.wallet_usato }}€)</span>
+        </li>
+        <li v-if="!expenses.length" class="list-item hint">Nessuna spesa registrata.</li>
+      </ul>
+    </div>
+  </AdminLayout>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
+import AdminLayout from '../../components/AdminLayout.vue'
 
 const route = useRoute()
 const user = ref(null)
