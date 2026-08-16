@@ -13,36 +13,55 @@
       <input id="search" v-model="search" type="text" placeholder="Nome, cognome o telefono" @input="load" />
     </div>
 
-    <div class="card">
-      <ul>
-        <li v-for="u in users" :key="u.id" class="list-item user-row">
-          <div>
-            <router-link :to="`/admin/users/${u.id}`">{{ u.nome }} {{ u.cognome }}</router-link>
-            <span class="hint"> — {{ u.telefono }}</span>
-          </div>
-
-          <div class="user-row-actions">
-            <span class="wallet-badge">{{ u.wallet_balance }}€</span>
-            <router-link :to="`/admin/expenses/new?user_id=${u.id}`" class="btn btn-primary btn-sm"
-              >+ Spesa</router-link
-            >
-            <router-link :to="`/admin/users/${u.id}`" class="btn btn-secondary btn-sm">Vedi</router-link>
-            <router-link :to="`/admin/users/${u.id}/edit`" class="btn btn-secondary btn-sm"
-              >Modifica</router-link
-            >
-            <button type="button" class="btn btn-danger btn-sm" @click="deleteUser(u)">Elimina</button>
-          </div>
-        </li>
-        <li v-if="!users.length" class="list-item hint">Nessun utente trovato.</li>
-      </ul>
+    <div class="card" style="padding: 0; overflow: hidden">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Utente</th>
+              <th>Telefono</th>
+              <th>Wallet</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in users" :key="u.id">
+              <td>
+                <router-link :to="`/admin/users/${u.id}`">{{ u.nome }} {{ u.cognome }}</router-link>
+              </td>
+              <td class="hint">{{ u.telefono }}</td>
+              <td><span class="wallet-badge">{{ u.wallet_balance }}€</span></td>
+              <td class="actions-cell">
+                <div class="user-row-actions" style="justify-content: flex-end">
+                  <router-link :to="`/admin/expenses/new?user_id=${u.id}`" class="btn btn-primary btn-sm"
+                    >+ Spesa</router-link
+                  >
+                  <details class="action-menu">
+                    <summary class="btn btn-secondary btn-sm">Azioni</summary>
+                    <div class="action-menu-list">
+                      <router-link :to="`/admin/users/${u.id}`">Vedi</router-link>
+                      <router-link :to="`/admin/users/${u.id}/edit`">Modifica</router-link>
+                      <button type="button" class="danger" @click="deleteUser(u)">Elimina</button>
+                    </div>
+                  </details>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!users.length">
+              <td colspan="4" class="hint">Nessun utente trovato.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
+import { confirmDialog } from '../../composables/useConfirm'
 
 const users = ref([])
 const search = ref('')
@@ -53,10 +72,29 @@ async function load() {
 }
 
 async function deleteUser(u) {
-  if (!confirm(`Eliminare l'utente ${u.nome} ${u.cognome}? L'operazione è irreversibile.`)) return
+  const ok = await confirmDialog({
+    title: 'Eliminare utente?',
+    message: `${u.nome} ${u.cognome} e il suo storico spese verranno eliminati definitivamente. L'operazione non è reversibile.`,
+    confirmLabel: 'Elimina',
+    cancelLabel: 'Annulla',
+  })
+  if (!ok) return
   await apiClient.delete(`/users/${u.id}`)
   await load()
 }
 
-onMounted(load)
+function closeMenusOnOutsideClick(event) {
+  document.querySelectorAll('details.action-menu[open]').forEach((el) => {
+    if (!el.contains(event.target)) el.removeAttribute('open')
+  })
+}
+
+onMounted(() => {
+  load()
+  document.addEventListener('click', closeMenusOnOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeMenusOnOutsideClick)
+})
 </script>
