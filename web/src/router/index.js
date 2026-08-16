@@ -7,6 +7,7 @@ import ExpenseFormView from '../views/admin/ExpenseFormView.vue'
 import WalletLookupView from '../views/public/WalletLookupView.vue'
 
 const routes = [
+  { path: '/', redirect: '/admin/login' },
   { path: '/admin/login', component: LoginView },
   { path: '/admin', redirect: '/admin/users' },
   { path: '/admin/users', component: UsersListView },
