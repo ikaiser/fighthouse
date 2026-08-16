@@ -2,7 +2,12 @@
   <AdminLayout v-if="user">
     <div style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4)">
       <h1>{{ user.nome }} {{ user.cognome }}</h1>
-      <router-link :to="`/admin/users/${user.id}/edit`" class="btn btn-secondary">Modifica</router-link>
+      <div style="display: flex; gap: var(--space-3)">
+        <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
+          >Nuova spesa</router-link
+        >
+        <router-link :to="`/admin/users/${user.id}/edit`" class="btn btn-secondary">Modifica</router-link>
+      </div>
     </div>
     <p class="hint">Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
 
@@ -10,10 +15,6 @@
       <p class="balance-label">Saldo wallet</p>
       <p class="balance-value">{{ wallet.wallet_balance }}€</p>
     </div>
-
-    <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
-      >Nuova spesa</router-link
-    >
 
     <h2>Storico spese</h2>
     <div class="card">
