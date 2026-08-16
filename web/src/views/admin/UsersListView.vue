@@ -22,7 +22,10 @@
           </div>
 
           <div class="user-row-actions">
-            <span class="amount amount-positive">{{ u.wallet_balance }}€</span>
+            <span class="wallet-badge">{{ u.wallet_balance }}€</span>
+            <router-link :to="`/admin/expenses/new?user_id=${u.id}`" class="btn btn-primary btn-sm"
+              >+ Spesa</router-link
+            >
             <router-link :to="`/admin/users/${u.id}`" class="btn btn-secondary btn-sm">Vedi</router-link>
             <router-link :to="`/admin/users/${u.id}/edit`" class="btn btn-secondary btn-sm"
               >Modifica</router-link
