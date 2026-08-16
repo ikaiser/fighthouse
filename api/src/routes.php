@@ -3,6 +3,7 @@
 use App\Controllers\AuthController;
 use App\Controllers\ExpenseController;
 use App\Controllers\UserController;
+use App\Controllers\WalletController;
 use App\Middleware\AuthMiddleware;
 use Slim\App;
 
@@ -14,6 +15,7 @@ return function (App $app) {
 
     $app->post('/api/admin/login', [AuthController::class, 'login']);
     $app->post('/api/admin/logout', [AuthController::class, 'logout']);
+    $app->post('/api/wallet/lookup', [WalletController::class, 'lookup']);
 
     $app->group('/api', function ($group) {
         $group->get('/users', [UserController::class, 'index']);
@@ -21,6 +23,7 @@ return function (App $app) {
         $group->get('/users/{id}', [UserController::class, 'show']);
         $group->put('/users/{id}', [UserController::class, 'update']);
         $group->delete('/users/{id}', [UserController::class, 'delete']);
+        $group->get('/users/{id}/wallet', [WalletController::class, 'show']);
 
         $group->get('/expenses', [ExpenseController::class, 'index']);
         $group->post('/expenses', [ExpenseController::class, 'create']);
