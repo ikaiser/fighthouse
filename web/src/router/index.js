@@ -4,6 +4,7 @@ import LoginView from '../views/admin/LoginView.vue'
 import UsersListView from '../views/admin/UsersListView.vue'
 import UserDetailView from '../views/admin/UserDetailView.vue'
 import ExpenseFormView from '../views/admin/ExpenseFormView.vue'
+import WalletLookupView from '../views/public/WalletLookupView.vue'
 
 const routes = [
   { path: '/admin/login', component: LoginView },
@@ -11,6 +12,7 @@ const routes = [
   { path: '/admin/users', component: UsersListView },
   { path: '/admin/users/:id', component: UserDetailView },
   { path: '/admin/expenses/new', component: ExpenseFormView },
+  { path: '/wallet', component: WalletLookupView },
 ]
 
 export const router = createRouter({
