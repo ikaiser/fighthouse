@@ -15,23 +15,6 @@
       >Nuova spesa</router-link
     >
 
-    <h2>Storico movimenti wallet</h2>
-    <div class="card">
-      <ul>
-        <li v-for="(t, i) in wallet.transactions" :key="i" class="list-item">
-          <span class="hint">{{ formatDateTime(t.created_at) }}</span> — {{ t.tipo }}
-          <span
-            class="amount"
-            :class="t.importo >= 0 ? 'amount-positive' : 'amount-negative'"
-            style="float: right"
-          >
-            {{ t.importo >= 0 ? '+' : '' }}{{ t.importo }}€
-          </span>
-        </li>
-        <li v-if="!wallet.transactions.length" class="list-item hint">Nessun movimento.</li>
-      </ul>
-    </div>
-
     <h2>Storico spese</h2>
     <div class="card">
       <ul>
@@ -50,7 +33,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
-import { formatDate, formatDateTime } from '../../utils/date'
+import { formatDate } from '../../utils/date'
 
 const route = useRoute()
 const user = ref(null)
