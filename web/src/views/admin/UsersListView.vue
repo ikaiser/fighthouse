@@ -5,17 +5,32 @@
       <router-link to="/admin/users/new" class="btn btn-primary">Nuovo utente</router-link>
     </div>
 
-    <div class="field" style="max-width: 400px">
+    <div class="field">
       <label for="search">Cerca</label>
       <input id="search" v-model="search" type="text" placeholder="Nome, cognome o telefono" @input="load" />
     </div>
 
     <div class="card">
       <ul>
-        <li v-for="u in users" :key="u.id" class="list-item">
-          <router-link :to="`/admin/users/${u.id}`">{{ u.nome }} {{ u.cognome }}</router-link>
-          <span class="hint"> — {{ u.telefono }}</span>
-          <span class="amount amount-positive" style="float: right">{{ u.wallet_balance }}€</span>
+        <li
+          v-for="u in users"
+          :key="u.id"
+          class="list-item"
+          style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
+        >
+          <div>
+            <router-link :to="`/admin/users/${u.id}`">{{ u.nome }} {{ u.cognome }}</router-link>
+            <span class="hint"> — {{ u.telefono }}</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0">
+            <span class="amount amount-positive">{{ u.wallet_balance }}€</span>
+            <router-link :to="`/admin/users/${u.id}`" class="btn btn-secondary btn-sm">Vedi</router-link>
+            <router-link :to="`/admin/users/${u.id}/edit`" class="btn btn-secondary btn-sm"
+              >Modifica</router-link
+            >
+            <button type="button" class="btn btn-danger btn-sm" @click="deleteUser(u)">Elimina</button>
+          </div>
         </li>
         <li v-if="!users.length" class="list-item hint">Nessun utente trovato.</li>
       </ul>
@@ -34,6 +49,12 @@ const search = ref('')
 async function load() {
   const { data } = await apiClient.get('/users', { params: { q: search.value || undefined } })
   users.value = data
+}
+
+async function deleteUser(u) {
+  if (!confirm(`Eliminare l'utente ${u.nome} ${u.cognome}? L'operazione è irreversibile.`)) return
+  await apiClient.delete(`/users/${u.id}`)
+  await load()
 }
 
 onMounted(load)
