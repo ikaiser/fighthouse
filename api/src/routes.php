@@ -1,6 +1,7 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Controllers\ExpenseController;
 use App\Controllers\UserController;
 use App\Middleware\AuthMiddleware;
 use Slim\App;
@@ -20,5 +21,10 @@ return function (App $app) {
         $group->get('/users/{id}', [UserController::class, 'show']);
         $group->put('/users/{id}', [UserController::class, 'update']);
         $group->delete('/users/{id}', [UserController::class, 'delete']);
+
+        $group->get('/expenses', [ExpenseController::class, 'index']);
+        $group->post('/expenses', [ExpenseController::class, 'create']);
+        $group->put('/expenses/{id}', [ExpenseController::class, 'update']);
+        $group->delete('/expenses/{id}', [ExpenseController::class, 'delete']);
     })->add(new AuthMiddleware());
 };
