@@ -36,14 +36,11 @@
                   <router-link :to="`/admin/expenses/new?user_id=${u.id}`" class="btn btn-primary btn-sm"
                     >+ Spesa</router-link
                   >
-                  <details class="action-menu">
-                    <summary class="btn btn-secondary btn-sm">Azioni</summary>
-                    <div class="action-menu-list">
-                      <router-link :to="`/admin/users/${u.id}`">Vedi</router-link>
-                      <router-link :to="`/admin/users/${u.id}/edit`">Modifica</router-link>
-                      <button type="button" class="danger" @click="deleteUser(u)">Elimina</button>
-                    </div>
-                  </details>
+                  <ActionMenu label="Azioni">
+                    <router-link :to="`/admin/users/${u.id}`">Vedi</router-link>
+                    <router-link :to="`/admin/users/${u.id}/edit`">Modifica</router-link>
+                    <button type="button" class="danger" @click="deleteUser(u)">Elimina</button>
+                  </ActionMenu>
                 </div>
               </td>
             </tr>
@@ -58,9 +55,10 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
+import ActionMenu from '../../components/ActionMenu.vue'
 import { confirmDialog } from '../../composables/useConfirm'
 
 const users = ref([])
@@ -83,18 +81,5 @@ async function deleteUser(u) {
   await load()
 }
 
-function closeMenusOnOutsideClick(event) {
-  document.querySelectorAll('details.action-menu[open]').forEach((el) => {
-    if (!el.contains(event.target)) el.removeAttribute('open')
-  })
-}
-
-onMounted(() => {
-  load()
-  document.addEventListener('click', closeMenusOnOutsideClick)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', closeMenusOnOutsideClick)
-})
+onMounted(load)
 </script>

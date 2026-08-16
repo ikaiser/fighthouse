@@ -70,6 +70,11 @@ p {
 
 a {
   color: var(--brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 ul {
@@ -129,6 +134,7 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-decoration: none;
   cursor: pointer;
   transition:
     background-color 150ms ease,
@@ -279,24 +285,13 @@ button {
   color: var(--text-muted);
 }
 
-.action-menu {
-  position: relative;
-}
-
-.action-menu > summary {
-  list-style: none;
-}
-
-.action-menu > summary::-webkit-details-marker {
-  display: none;
+.action-menu-trigger {
+  display: inline-flex;
 }
 
 .action-menu-list {
-  position: absolute;
-  right: 0;
-  top: calc(100% + var(--space-2));
-  z-index: 20;
-  min-width: 160px;
+  z-index: 200;
+  min-width: 170px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
