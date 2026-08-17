@@ -44,7 +44,7 @@ async function submit() {
   error.value = ''
   try {
     await auth.login(username.value, password.value)
-    router.push('/admin/users')
+    router.push('/admin/athletes')
   } catch (e) {
     error.value = 'Credenziali non valide'
   } finally {
