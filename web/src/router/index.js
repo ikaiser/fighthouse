@@ -25,9 +25,15 @@ export const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  if (to.path.startsWith('/admin') && to.path !== '/admin/login' && !auth.isAuthenticated) {
+  const isProtected = to.path.startsWith('/admin') && to.path !== '/admin/login'
+  if (!isProtected) return
+
+  if (!auth.checked) {
+    await auth.checkSession()
+  }
+  if (!auth.isAuthenticated) {
     return '/admin/login'
   }
 })

@@ -48,4 +48,25 @@ class AuthControllerTest extends TestCase
 
         $this->assertEquals(401, $response->getStatusCode());
     }
+
+    public function testMeReturns200WhenSessionActive(): void
+    {
+        $admin = Admin::create(['username' => 'admin', 'password_hash' => password_hash('secret123', PASSWORD_BCRYPT)]);
+        $_SESSION['admin_id'] = $admin->id;
+
+        $controller = new AuthController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/admin/me');
+        $response = $controller->me($request, new Response());
+
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testMeReturns401WhenNoSession(): void
+    {
+        $controller = new AuthController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/admin/me');
+        $response = $controller->me($request, new Response());
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
 }

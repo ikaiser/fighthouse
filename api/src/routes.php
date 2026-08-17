@@ -16,6 +16,7 @@ return function (App $app) {
 
     $app->post('/api/admin/login', [AuthController::class, 'login']);
     $app->post('/api/admin/logout', [AuthController::class, 'logout']);
+    $app->get('/api/admin/me', [AuthController::class, 'me']);
     $app->post('/api/wallet/lookup', [WalletController::class, 'lookup']);
 
     $app->group('/api', function ($group) {

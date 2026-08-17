@@ -29,4 +29,15 @@ class AuthController
         $response->getBody()->write(json_encode(['ok' => true]));
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function me(Request $request, Response $response): Response
+    {
+        if (empty($_SESSION['admin_id'])) {
+            $response->getBody()->write(json_encode(['authenticated' => false]));
+            return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write(json_encode(['authenticated' => true]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }
