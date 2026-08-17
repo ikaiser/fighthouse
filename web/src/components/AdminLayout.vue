@@ -1,9 +1,10 @@
 <template>
   <div>
     <header class="admin-topbar">
-      <router-link to="/admin/users" class="brand-mark">FIGHT <span>HOUSE</span></router-link>
+      <router-link to="/admin/athletes" class="brand-mark">FIGHT <span>HOUSE</span></router-link>
       <nav>
-        <router-link to="/admin/users">Utenti</router-link>
+        <router-link to="/admin/athletes">Atleti</router-link>
+        <router-link to="/admin/coaches">Coach</router-link>
         <button type="button" class="btn btn-secondary btn-sm" @click="logout">Esci</button>
       </nav>
     </header>

@@ -43,6 +43,7 @@ class AthleteController
             'email' => $data['email'], 'data_nascita' => $data['data_nascita'], 'coach_id' => $data['coach_id'],
             'wallet_balance' => 0,
         ]);
+        $athlete->load('coach');
 
         $response->getBody()->write($athlete->toJson());
         return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
@@ -83,6 +84,7 @@ class AthleteController
             'nome' => $data['nome'], 'cognome' => $data['cognome'], 'telefono' => $data['telefono'],
             'email' => $data['email'], 'data_nascita' => $data['data_nascita'], 'coach_id' => $data['coach_id'],
         ]);
+        $athlete->load('coach');
 
         $response->getBody()->write($athlete->toJson());
         return $response->withHeader('Content-Type', 'application/json');

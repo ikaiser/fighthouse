@@ -52,7 +52,7 @@ const useWallet = ref(false)
 const error = ref('')
 
 async function refreshMax() {
-  const { data } = await apiClient.get(`/users/${userId}/wallet`)
+  const { data } = await apiClient.get(`/athletes/${userId}/wallet`)
   maxRedeemable.value = data.max_redeemable
 }
 
@@ -66,7 +66,7 @@ async function submit() {
       note: note.value || null,
       wallet_usato: useWallet.value ? maxRedeemable.value : 0,
     })
-    router.push(`/admin/users/${userId}`)
+    router.push(`/admin/athletes/${userId}`)
   } catch (e) {
     error.value = e.response?.data?.error || 'errore durante il salvataggio'
   }

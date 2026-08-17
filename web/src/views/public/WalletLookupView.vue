@@ -19,7 +19,9 @@
 
       <div v-if="result" style="margin-top: var(--space-5)">
         <div class="balance-hero">
-          <p class="balance-label">Ciao {{ result.nome }}, il tuo saldo è</p>
+          <p class="balance-label">
+            Ciao {{ result.nome }} ({{ result.type === 'coach' ? 'coach' : 'atleta' }}), il tuo saldo è
+          </p>
           <p class="balance-value">{{ result.wallet_balance }}€</p>
         </div>
 

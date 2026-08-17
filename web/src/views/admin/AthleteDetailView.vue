@@ -1,18 +1,21 @@
 <template>
-  <AdminLayout v-if="user">
+  <AdminLayout v-if="athlete">
     <div
       class="page-header"
       style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4)"
     >
-      <h1>{{ user.nome }} {{ user.cognome }}</h1>
+      <h1>{{ athlete.nome }} {{ athlete.cognome }}</h1>
       <div class="user-row-actions">
-        <router-link :to="`/admin/expenses/new?user_id=${user.id}`" class="btn btn-primary"
+        <router-link :to="`/admin/expenses/new?user_id=${athlete.id}`" class="btn btn-primary"
           >Nuova spesa</router-link
         >
-        <button type="button" class="btn btn-secondary" @click="editUser">Modifica</button>
+        <button type="button" class="btn btn-secondary" @click="editAthlete">Modifica</button>
       </div>
     </div>
-    <p class="hint">Telefono: {{ user.telefono }} — Email: {{ user.email }}</p>
+    <p class="hint">
+      Telefono: {{ athlete.telefono }} — Email: {{ athlete.email }} — Coach:
+      {{ athlete.coach?.nome }} {{ athlete.coach?.cognome }}
+    </p>
 
     <div class="balance-hero" style="margin: var(--space-5) 0">
       <p class="balance-label">Saldo wallet</p>
@@ -38,27 +41,27 @@ import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
 import { formatDate } from '../../utils/date'
-import { openUserForm } from '../../composables/useUserFormModal'
+import { openAthleteForm } from '../../composables/useAthleteFormModal'
 
 const route = useRoute()
-const user = ref(null)
+const athlete = ref(null)
 const wallet = ref({ wallet_balance: 0, transactions: [] })
 const expenses = ref([])
 
 onMounted(async () => {
   const id = route.params.id
-  const [userRes, walletRes, expensesRes] = await Promise.all([
-    apiClient.get(`/users/${id}`),
-    apiClient.get(`/users/${id}/wallet`),
+  const [athleteRes, walletRes, expensesRes] = await Promise.all([
+    apiClient.get(`/athletes/${id}`),
+    apiClient.get(`/athletes/${id}/wallet`),
     apiClient.get('/expenses', { params: { user_id: id } }),
   ])
-  user.value = userRes.data
+  athlete.value = athleteRes.data
   wallet.value = walletRes.data
   expenses.value = expensesRes.data
 })
 
-async function editUser() {
-  const updated = await openUserForm(user.value.id)
-  if (updated) user.value = updated
+async function editAthlete() {
+  const updated = await openAthleteForm(athlete.value.id)
+  if (updated) athlete.value = updated
 }
 </script>
