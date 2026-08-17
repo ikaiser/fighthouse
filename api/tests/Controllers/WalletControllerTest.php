@@ -3,7 +3,8 @@
 namespace Tests\Controllers;
 
 use App\Controllers\WalletController;
-use App\Models\User;
+use App\Models\Athlete;
+use App\Models\Coach;
 use App\Services\WalletService;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ServerRequestFactory;
@@ -23,13 +24,22 @@ class WalletControllerTest extends TestCase
         TestDatabase::reset();
     }
 
-    public function testLookupByPhoneReturnsBalanceAndHistory(): void
+    private function makeCoach(?string $telefono = null): Coach
     {
-        $user = User::create([
-            'nome' => 'Anna', 'cognome' => 'Bianchi', 'telefono' => '3339990000',
-            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20', 'wallet_balance' => 0,
+        return Coach::create([
+            'nome' => 'Carlo', 'cognome' => 'Bianchi', 'telefono' => $telefono ?? uniqid('coach'),
+            'email' => 'coach@example.com', 'wallet_balance' => 0,
         ]);
-        (new WalletService())->createExpense($user, 100, '2026-08-16', null, 0);
+    }
+
+    public function testLookupByPhoneReturnsAthleteBalanceAndHistory(): void
+    {
+        $athlete = Athlete::create([
+            'nome' => 'Anna', 'cognome' => 'Bianchi', 'telefono' => '3339990000',
+            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20',
+            'coach_id' => $this->makeCoach()->id, 'wallet_balance' => 0,
+        ]);
+        (new WalletService())->createExpense($athlete, 100, '2026-08-16', null, 0);
 
         $controller = new WalletController();
         $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/wallet/lookup')
@@ -38,8 +48,31 @@ class WalletControllerTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $body = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('athlete', $body['type']);
         $this->assertEquals(5.0, $body['wallet_balance']);
         $this->assertCount(1, $body['transactions']);
+    }
+
+    public function testLookupByPhoneReturnsCoachBalanceAndHistory(): void
+    {
+        $coach = $this->makeCoach('3221110000');
+        $athlete = Athlete::create([
+            'nome' => 'Anna', 'cognome' => 'Bianchi', 'telefono' => '3339990002',
+            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20',
+            'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+        (new WalletService())->createExpense($athlete, 100, '2026-08-16', null, 0);
+
+        $controller = new WalletController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/wallet/lookup')
+            ->withParsedBody(['telefono' => '3221110000']);
+        $response = $controller->lookup($request, new Response());
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('coach', $body['type']);
+        $this->assertEquals(5.0, $body['wallet_balance']);
+        $this->assertArrayNotHasKey('max_redeemable', $body);
     }
 
     public function testLookupByUnknownPhoneReturns404(): void
@@ -54,19 +87,39 @@ class WalletControllerTest extends TestCase
 
     public function testShowReturnsMaxRedeemable(): void
     {
-        $user = User::create([
+        $athlete = Athlete::create([
             'nome' => 'Anna', 'cognome' => 'Bianchi', 'telefono' => '3339990001',
-            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20', 'wallet_balance' => 0,
+            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20',
+            'coach_id' => $this->makeCoach()->id, 'wallet_balance' => 0,
         ]);
-        (new WalletService())->createExpense($user, 1000, '2026-08-16', null, 0);
+        (new WalletService())->createExpense($athlete, 1000, '2026-08-16', null, 0);
         // saldo dopo: 50
 
         $controller = new WalletController();
-        $request = (new ServerRequestFactory())->createServerRequest('GET', "/api/users/{$user->id}/wallet");
-        $response = $controller->show($request, new Response(), ['id' => $user->id]);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', "/api/athletes/{$athlete->id}/wallet");
+        $response = $controller->show($request, new Response(), ['id' => $athlete->id]);
 
         $body = json_decode((string) $response->getBody(), true);
         $this->assertEquals(50.0, $body['wallet_balance']);
         $this->assertEquals(50.0, $body['max_redeemable']);
+    }
+
+    public function testShowCoachReturnsBalanceWithoutMaxRedeemable(): void
+    {
+        $coach = $this->makeCoach();
+        $athlete = Athlete::create([
+            'nome' => 'Anna', 'cognome' => 'Bianchi', 'telefono' => '3339990003',
+            'email' => 'anna@example.com', 'data_nascita' => '1995-05-20',
+            'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+        (new WalletService())->createExpense($athlete, 1000, '2026-08-16', null, 0);
+
+        $controller = new WalletController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', "/api/coaches/{$coach->id}/wallet");
+        $response = $controller->showCoach($request, new Response(), ['id' => $coach->id]);
+
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertEquals(50.0, $body['wallet_balance']);
+        $this->assertArrayNotHasKey('max_redeemable', $body);
     }
 }

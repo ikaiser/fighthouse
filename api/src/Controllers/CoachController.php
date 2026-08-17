@@ -2,24 +2,16 @@
 
 namespace App\Controllers;
 
-use App\Models\User;
+use App\Models\Athlete;
+use App\Models\Coach;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class UserController
+class CoachController
 {
     public function index(Request $request, Response $response): Response
     {
-        $search = $request->getQueryParams()['q'] ?? null;
-        $query = User::query();
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nome', 'like', "%{$search}%")
-                  ->orWhere('cognome', 'like', "%{$search}%")
-                  ->orWhere('telefono', 'like', "%{$search}%");
-            });
-        }
-        $response->getBody()->write($query->orderBy('cognome')->get()->toJson());
+        $response->getBody()->write(Coach::orderBy('cognome')->get()->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -32,36 +24,36 @@ class UserController
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
 
-        if (User::where('telefono', $data['telefono'])->exists()) {
+        if ($this->phoneTaken($data['telefono'])) {
             $response->getBody()->write(json_encode(['error' => 'telefono già registrato']));
             return $response->withStatus(409)->withHeader('Content-Type', 'application/json');
         }
 
-        $user = User::create([
+        $coach = Coach::create([
             'nome' => $data['nome'], 'cognome' => $data['cognome'], 'telefono' => $data['telefono'],
-            'email' => $data['email'], 'data_nascita' => $data['data_nascita'], 'wallet_balance' => 0,
+            'email' => $data['email'], 'wallet_balance' => 0,
         ]);
 
-        $response->getBody()->write($user->toJson());
+        $response->getBody()->write($coach->toJson());
         return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
     }
 
     public function show(Request $request, Response $response, array $args): Response
     {
-        $user = User::find($args['id']);
-        if (!$user) {
-            $response->getBody()->write(json_encode(['error' => 'utente non trovato']));
+        $coach = Coach::find($args['id']);
+        if (!$coach) {
+            $response->getBody()->write(json_encode(['error' => 'coach non trovato']));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
-        $response->getBody()->write($user->toJson());
+        $response->getBody()->write($coach->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function update(Request $request, Response $response, array $args): Response
     {
-        $user = User::find($args['id']);
-        if (!$user) {
-            $response->getBody()->write(json_encode(['error' => 'utente non trovato']));
+        $coach = Coach::find($args['id']);
+        if (!$coach) {
+            $response->getBody()->write(json_encode(['error' => 'coach non trovato']));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
 
@@ -72,41 +64,54 @@ class UserController
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
 
-        if (User::where('telefono', $data['telefono'])->where('id', '!=', $user->id)->exists()) {
+        if ($this->phoneTaken($data['telefono'], $coach->id)) {
             $response->getBody()->write(json_encode(['error' => 'telefono già registrato']));
             return $response->withStatus(409)->withHeader('Content-Type', 'application/json');
         }
 
-        $user->update([
+        $coach->update([
             'nome' => $data['nome'], 'cognome' => $data['cognome'], 'telefono' => $data['telefono'],
-            'email' => $data['email'], 'data_nascita' => $data['data_nascita'],
+            'email' => $data['email'],
         ]);
 
-        $response->getBody()->write($user->toJson());
+        $response->getBody()->write($coach->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function delete(Request $request, Response $response, array $args): Response
     {
-        $user = User::find($args['id']);
-        if (!$user) {
-            $response->getBody()->write(json_encode(['error' => 'utente non trovato']));
+        $coach = Coach::find($args['id']);
+        if (!$coach) {
+            $response->getBody()->write(json_encode(['error' => 'coach non trovato']));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
-        $user->delete();
+
+        if (Athlete::where('coach_id', $coach->id)->exists()) {
+            $response->getBody()->write(json_encode(['error' => 'il coach ha ancora atleti assegnati']));
+            return $response->withStatus(409)->withHeader('Content-Type', 'application/json');
+        }
+
+        $coach->delete();
         return $response->withStatus(204);
+    }
+
+    private function phoneTaken(string $telefono, ?int $excludeId = null): bool
+    {
+        $coachQuery = Coach::where('telefono', $telefono);
+        if ($excludeId) {
+            $coachQuery->where('id', '!=', $excludeId);
+        }
+
+        return $coachQuery->exists() || Athlete::where('telefono', $telefono)->exists();
     }
 
     private function validate(array $data): array
     {
         $errors = [];
-        foreach (['nome', 'cognome', 'telefono', 'email', 'data_nascita'] as $field) {
+        foreach (['nome', 'cognome', 'telefono', 'email'] as $field) {
             if (empty($data[$field])) {
                 $errors[] = "{$field} obbligatorio";
             }
-        }
-        if (!empty($data['data_nascita']) && !\DateTime::createFromFormat('Y-m-d', $data['data_nascita'])) {
-            $errors[] = 'data_nascita non valida';
         }
         return $errors;
     }

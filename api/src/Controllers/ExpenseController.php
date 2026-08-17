@@ -2,8 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\Athlete;
 use App\Models\Expense;
-use App\Models\User;
 use App\Services\WalletService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -39,15 +39,15 @@ class ExpenseController
     public function create(Request $request, Response $response): Response
     {
         $data = (array) $request->getParsedBody();
-        $user = User::find($data['user_id'] ?? null);
-        if (!$user) {
-            $response->getBody()->write(json_encode(['error' => 'utente non trovato']));
+        $athlete = Athlete::find($data['user_id'] ?? null);
+        if (!$athlete) {
+            $response->getBody()->write(json_encode(['error' => 'atleta non trovato']));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
 
         try {
             $expense = $this->walletService->createExpense(
-                $user,
+                $athlete,
                 (float) ($data['importo'] ?? 0),
                 (string) ($data['data_spesa'] ?? ''),
                 $data['note'] ?? null,

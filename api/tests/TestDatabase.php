@@ -41,13 +41,24 @@ class TestDatabase
             $t->timestamp('created_at')->useCurrent();
         });
 
-        $schema->create('users', function ($t) {
+        $schema->create('coaches', function ($t) {
+            $t->increments('id');
+            $t->string('nome');
+            $t->string('cognome');
+            $t->string('telefono')->unique();
+            $t->string('email');
+            $t->decimal('wallet_balance', 10, 2)->default(0);
+            $t->timestamps();
+        });
+
+        $schema->create('athletes', function ($t) {
             $t->increments('id');
             $t->string('nome');
             $t->string('cognome');
             $t->string('telefono')->unique();
             $t->string('email');
             $t->date('data_nascita');
+            $t->unsignedInteger('coach_id');
             $t->decimal('wallet_balance', 10, 2)->default(0);
             $t->timestamps();
         });
@@ -71,11 +82,21 @@ class TestDatabase
             $t->decimal('saldo_dopo', 10, 2);
             $t->timestamp('created_at')->useCurrent();
         });
+
+        $schema->create('coach_wallet_transactions', function ($t) {
+            $t->increments('id');
+            $t->unsignedInteger('coach_id');
+            $t->unsignedInteger('expense_id')->nullable();
+            $t->string('tipo', 20);
+            $t->decimal('importo', 10, 2);
+            $t->decimal('saldo_dopo', 10, 2);
+            $t->timestamp('created_at')->useCurrent();
+        });
     }
 
     public static function reset(): void
     {
-        foreach (['wallet_transactions', 'expenses', 'users', 'admins'] as $table) {
+        foreach (['coach_wallet_transactions', 'wallet_transactions', 'expenses', 'athletes', 'coaches', 'admins'] as $table) {
             Capsule::table($table)->delete();
         }
     }

@@ -1,8 +1,9 @@
 <?php
 
+use App\Controllers\AthleteController;
 use App\Controllers\AuthController;
+use App\Controllers\CoachController;
 use App\Controllers\ExpenseController;
-use App\Controllers\UserController;
 use App\Controllers\WalletController;
 use App\Middleware\AuthMiddleware;
 use Slim\App;
@@ -18,12 +19,19 @@ return function (App $app) {
     $app->post('/api/wallet/lookup', [WalletController::class, 'lookup']);
 
     $app->group('/api', function ($group) {
-        $group->get('/users', [UserController::class, 'index']);
-        $group->post('/users', [UserController::class, 'create']);
-        $group->get('/users/{id}', [UserController::class, 'show']);
-        $group->put('/users/{id}', [UserController::class, 'update']);
-        $group->delete('/users/{id}', [UserController::class, 'delete']);
-        $group->get('/users/{id}/wallet', [WalletController::class, 'show']);
+        $group->get('/athletes', [AthleteController::class, 'index']);
+        $group->post('/athletes', [AthleteController::class, 'create']);
+        $group->get('/athletes/{id}', [AthleteController::class, 'show']);
+        $group->put('/athletes/{id}', [AthleteController::class, 'update']);
+        $group->delete('/athletes/{id}', [AthleteController::class, 'delete']);
+        $group->get('/athletes/{id}/wallet', [WalletController::class, 'show']);
+
+        $group->get('/coaches', [CoachController::class, 'index']);
+        $group->post('/coaches', [CoachController::class, 'create']);
+        $group->get('/coaches/{id}', [CoachController::class, 'show']);
+        $group->put('/coaches/{id}', [CoachController::class, 'update']);
+        $group->delete('/coaches/{id}', [CoachController::class, 'delete']);
+        $group->get('/coaches/{id}/wallet', [WalletController::class, 'showCoach']);
 
         $group->get('/expenses', [ExpenseController::class, 'index']);
         $group->post('/expenses', [ExpenseController::class, 'create']);

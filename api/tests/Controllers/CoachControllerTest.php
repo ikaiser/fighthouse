@@ -1,0 +1,76 @@
+<?php
+
+namespace Tests\Controllers;
+
+use App\Controllers\CoachController;
+use App\Models\Athlete;
+use App\Models\Coach;
+use PHPUnit\Framework\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Response;
+use Tests\TestDatabase;
+
+class CoachControllerTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        TestDatabase::boot();
+        TestDatabase::migrate();
+    }
+
+    protected function tearDown(): void
+    {
+        TestDatabase::reset();
+    }
+
+    public function testCreateCoachPersistsFields(): void
+    {
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/coaches')
+            ->withParsedBody(['nome' => 'Carlo', 'cognome' => 'Bianchi', 'telefono' => '3335551111', 'email' => 'c@example.com']);
+        $response = $controller->create($request, new Response());
+
+        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals(1, Coach::count());
+    }
+
+    public function testCreateCoachRejectsDuplicatePhone(): void
+    {
+        Coach::create(['nome' => 'A', 'cognome' => 'B', 'telefono' => '3335551111', 'email' => 'a@example.com', 'wallet_balance' => 0]);
+
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/coaches')
+            ->withParsedBody(['nome' => 'C', 'cognome' => 'D', 'telefono' => '3335551111', 'email' => 'c@example.com']);
+        $response = $controller->create($request, new Response());
+
+        $this->assertEquals(409, $response->getStatusCode());
+    }
+
+    public function testDeleteCoachRejectsIfAthletesAssigned(): void
+    {
+        $coach = Coach::create(['nome' => 'A', 'cognome' => 'B', 'telefono' => '3335551111', 'email' => 'a@example.com', 'wallet_balance' => 0]);
+        Athlete::create([
+            'nome' => 'X', 'cognome' => 'Y', 'telefono' => '3339990000', 'email' => 'x@example.com',
+            'data_nascita' => '1990-01-01', 'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('DELETE', "/api/coaches/{$coach->id}");
+        $response = $controller->delete($request, new Response(), ['id' => $coach->id]);
+
+        $this->assertEquals(409, $response->getStatusCode());
+        $this->assertNotNull(Coach::find($coach->id));
+    }
+
+    public function testDeleteCoachSucceedsWithoutAthletes(): void
+    {
+        $coach = Coach::create(['nome' => 'A', 'cognome' => 'B', 'telefono' => '3335551111', 'email' => 'a@example.com', 'wallet_balance' => 0]);
+
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('DELETE', "/api/coaches/{$coach->id}");
+        $response = $controller->delete($request, new Response(), ['id' => $coach->id]);
+
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertNull(Coach::find($coach->id));
+    }
+}

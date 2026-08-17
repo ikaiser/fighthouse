@@ -3,7 +3,8 @@
 namespace Tests\Controllers;
 
 use App\Controllers\ExpenseController;
-use App\Models\User;
+use App\Models\Athlete;
+use App\Models\Coach;
 use App\Services\WalletService;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ServerRequestFactory;
@@ -23,42 +24,47 @@ class ExpenseControllerTest extends TestCase
         TestDatabase::reset();
     }
 
+    private function makeAthlete(): Athlete
+    {
+        $coach = Coach::create(['nome' => 'C', 'cognome' => 'B', 'telefono' => uniqid('coach'), 'email' => 'c@example.com', 'wallet_balance' => 0]);
+
+        return Athlete::create([
+            'nome' => 'A', 'cognome' => 'B', 'telefono' => uniqid('3'), 'email' => 'a@example.com',
+            'data_nascita' => '1990-01-01', 'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+    }
+
     public function testCreateExpenseAppliesCashback(): void
     {
-        $user = User::create([
-            'nome' => 'A', 'cognome' => 'B', 'telefono' => '333', 'email' => 'a@example.com',
-            'data_nascita' => '1990-01-01', 'wallet_balance' => 0,
-        ]);
+        $athlete = $this->makeAthlete();
 
         $controller = new ExpenseController();
         $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/expenses')
             ->withParsedBody([
-                'user_id' => $user->id, 'importo' => 100, 'data_spesa' => '2026-08-16', 'wallet_usato' => 0,
+                'user_id' => $athlete->id, 'importo' => 100, 'data_spesa' => '2026-08-16', 'wallet_usato' => 0,
             ]);
         $response = $controller->create($request, new Response());
 
         $this->assertEquals(201, $response->getStatusCode());
-        $this->assertEquals(5.0, $user->fresh()->wallet_balance);
+        $this->assertEquals(5.0, $athlete->fresh()->wallet_balance);
     }
 
     public function testCreateExpenseReturns400OnInvalidWalletUsato(): void
     {
-        $user = User::create([
-            'nome' => 'A', 'cognome' => 'B', 'telefono' => '333', 'email' => 'a@example.com',
-            'data_nascita' => '1990-01-01', 'wallet_balance' => 10,
-        ]);
+        $athlete = $this->makeAthlete();
+        $athlete->update(['wallet_balance' => 10]);
 
         $controller = new ExpenseController();
         $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/expenses')
             ->withParsedBody([
-                'user_id' => $user->id, 'importo' => 100, 'data_spesa' => '2026-08-16', 'wallet_usato' => 10,
+                'user_id' => $athlete->id, 'importo' => 100, 'data_spesa' => '2026-08-16', 'wallet_usato' => 10,
             ]);
         $response = $controller->create($request, new Response());
 
         $this->assertEquals(400, $response->getStatusCode());
     }
 
-    public function testCreateExpenseReturns404ForUnknownUser(): void
+    public function testCreateExpenseReturns404ForUnknownAthlete(): void
     {
         $controller = new ExpenseController();
         $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/expenses')
@@ -72,29 +78,23 @@ class ExpenseControllerTest extends TestCase
 
     public function testDeleteExpenseReversesWallet(): void
     {
-        $user = User::create([
-            'nome' => 'A', 'cognome' => 'B', 'telefono' => '333', 'email' => 'a@example.com',
-            'data_nascita' => '1990-01-01', 'wallet_balance' => 0,
-        ]);
-        $expense = (new WalletService())->createExpense($user, 100, '2026-08-16', null, 0);
+        $athlete = $this->makeAthlete();
+        $expense = (new WalletService())->createExpense($athlete, 100, '2026-08-16', null, 0);
 
         $controller = new ExpenseController();
         $request = (new ServerRequestFactory())->createServerRequest('DELETE', "/api/expenses/{$expense->id}");
         $response = $controller->delete($request, new Response(), ['id' => $expense->id]);
 
         $this->assertEquals(204, $response->getStatusCode());
-        $this->assertEquals(0.0, $user->fresh()->wallet_balance);
+        $this->assertEquals(0.0, $athlete->fresh()->wallet_balance);
     }
 
     public function testUpdateExpenseReturns409WhenBalanceWouldGoNegative(): void
     {
-        $user = User::create([
-            'nome' => 'A', 'cognome' => 'B', 'telefono' => '333', 'email' => 'a@example.com',
-            'data_nascita' => '1990-01-01', 'wallet_balance' => 0,
-        ]);
+        $athlete = $this->makeAthlete();
         $service = new WalletService();
-        $expenseA = $service->createExpense($user, 1000, '2026-08-16', null, 0);
-        $service->createExpense($user->fresh(), 100, '2026-08-16', null, 50.0);
+        $expenseA = $service->createExpense($athlete, 1000, '2026-08-16', null, 0);
+        $service->createExpense($athlete->fresh(), 100, '2026-08-16', null, 50.0);
 
         $controller = new ExpenseController();
         $request = (new ServerRequestFactory())->createServerRequest('PUT', "/api/expenses/{$expenseA->id}")

@@ -13,8 +13,8 @@ class Expense extends Model
         'data_spesa' => 'date:Y-m-d',
     ];
 
-    public function user()
+    public function athlete()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Athlete::class, 'user_id');
     }
 }
