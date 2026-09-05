@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Athlete;
 use App\Models\Expense;
 use App\Services\WalletService;
+use App\Support\Pagination;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -30,6 +31,11 @@ class ExpenseController
         }
         if (!empty($params['to'])) {
             $query->where('data_spesa', '<=', $params['to']);
+        }
+
+        if (!empty($params['page'])) {
+            $response->getBody()->write(Pagination::toJson($query, $params));
+            return $response->withHeader('Content-Type', 'application/json');
         }
 
         $response->getBody()->write($query->get()->toJson());

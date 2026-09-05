@@ -62,6 +62,24 @@ class CoachControllerTest extends TestCase
         $this->assertNotNull(Coach::find($coach->id));
     }
 
+    public function testIndexReturnsPaginatedEnvelopeWhenPageRequested(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            Coach::create(['nome' => 'A', 'cognome' => "B{$i}", 'telefono' => "333555000{$i}", 'email' => 'a@example.com', 'wallet_balance' => 0]);
+        }
+
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/coaches')
+            ->withQueryParams(['page' => '2', 'per_page' => '2']);
+        $response = $controller->index($request, new Response());
+
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertCount(1, $body['data']);
+        $this->assertEquals(3, $body['meta']['total']);
+        $this->assertEquals(2, $body['meta']['current_page']);
+        $this->assertEquals(2, $body['meta']['last_page']);
+    }
+
     public function testDeleteCoachSucceedsWithoutAthletes(): void
     {
         $coach = Coach::create(['nome' => 'A', 'cognome' => 'B', 'telefono' => '3335551111', 'email' => 'a@example.com', 'wallet_balance' => 0]);

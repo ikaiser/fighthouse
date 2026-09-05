@@ -6,6 +6,11 @@ final class CreateExpensesTable extends AbstractMigration
 {
     public function change(): void
     {
+        // FK verso 'users': a questo punto della cronologia delle migrazioni la
+        // tabella si chiama ancora così (rinominata in 'athletes' solo dalla
+        // migrazione 20260817000002). Non cambiare: Postgres segue il rename
+        // della tabella a livello di OID, quindi il vincolo resta valido, ma
+        // modificare qui il nome romperebbe un setup eseguito da zero.
         $table = $this->table('expenses');
         $table
             ->addColumn('user_id', 'integer')

@@ -45,6 +45,16 @@
         </table>
       </div>
     </div>
+
+    <div v-if="lastPage > 1" class="user-row-actions" style="justify-content: flex-end; margin-top: var(--space-4)">
+      <button type="button" class="btn btn-secondary btn-sm" :disabled="page <= 1" @click="goToPage(page - 1)">
+        Precedente
+      </button>
+      <span class="hint">Pagina {{ page }} di {{ lastPage }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" :disabled="page >= lastPage" @click="goToPage(page + 1)">
+        Successiva
+      </button>
+    </div>
   </AdminLayout>
 </template>
 
@@ -56,12 +66,22 @@ import ActionMenu from '../../components/ActionMenu.vue'
 import { confirmDialog } from '../../composables/useConfirm'
 import { openCoachForm } from '../../composables/useCoachFormModal'
 
+const PER_PAGE = 20
+
 const coaches = ref([])
 const error = ref('')
+const page = ref(1)
+const lastPage = ref(1)
 
 async function load() {
-  const { data } = await apiClient.get('/coaches')
-  coaches.value = data
+  const { data } = await apiClient.get('/coaches', { params: { page: page.value, per_page: PER_PAGE } })
+  coaches.value = data.data
+  lastPage.value = data.meta.last_page
+}
+
+function goToPage(target) {
+  page.value = target
+  load()
 }
 
 async function createCoach() {

@@ -6,6 +6,7 @@ final class CreateWalletTransactionsTable extends AbstractMigration
 {
     public function change(): void
     {
+        // FK verso 'users': vedi nota in 20260816000003_create_expenses_table.php.
         $table = $this->table('wallet_transactions');
         $table
             ->addColumn('user_id', 'integer')

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Athlete;
 use App\Models\Coach;
+use App\Support\Pagination;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -11,7 +12,15 @@ class CoachController
 {
     public function index(Request $request, Response $response): Response
     {
-        $response->getBody()->write(Coach::orderBy('cognome')->get()->toJson());
+        $params = $request->getQueryParams();
+        $query = Coach::orderBy('cognome');
+
+        if (!empty($params['page'])) {
+            $response->getBody()->write(Pagination::toJson($query, $params));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write($query->get()->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 

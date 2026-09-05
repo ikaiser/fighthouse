@@ -5,6 +5,7 @@ namespace Tests\Controllers;
 use App\Controllers\AthleteController;
 use App\Models\Athlete;
 use App\Models\Coach;
+use App\Services\WalletService;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Response;
@@ -142,6 +143,64 @@ class AthleteControllerTest extends TestCase
 
         $this->assertEquals(204, $response->getStatusCode());
         $this->assertNull(Athlete::find($athlete->id));
+    }
+
+    public function testDeleteAthleteWithExpensesDoesNotAffectCoachWallet(): void
+    {
+        $coach = $this->makeCoach();
+        $athlete = Athlete::create([
+            'nome' => 'A', 'cognome' => 'B', 'telefono' => '3330000099',
+            'email' => 'a@example.com', 'data_nascita' => '1990-01-01', 'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+        (new WalletService())->createExpense($athlete, 100.0, '2026-01-01', null, 0);
+        $coachBalanceBefore = $coach->fresh()->wallet_balance;
+
+        $controller = new AthleteController();
+        $request = (new ServerRequestFactory())->createServerRequest('DELETE', "/api/athletes/{$athlete->id}");
+        $response = $controller->delete($request, new Response(), ['id' => $athlete->id]);
+
+        $this->assertEquals(204, $response->getStatusCode());
+        $this->assertEquals($coachBalanceBefore, $coach->fresh()->wallet_balance);
+    }
+
+    public function testIndexReturnsPlainArrayWhenNoPageParam(): void
+    {
+        $coach = $this->makeCoach();
+        Athlete::create([
+            'nome' => 'A', 'cognome' => 'B', 'telefono' => '3330000010',
+            'email' => 'a@example.com', 'data_nascita' => '1990-01-01', 'coach_id' => $coach->id, 'wallet_balance' => 0,
+        ]);
+
+        $controller = new AthleteController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/athletes');
+        $response = $controller->index($request, new Response());
+
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertIsList($body);
+        $this->assertCount(1, $body);
+    }
+
+    public function testIndexReturnsPaginatedEnvelopeWhenPageRequested(): void
+    {
+        $coach = $this->makeCoach();
+        for ($i = 0; $i < 3; $i++) {
+            Athlete::create([
+                'nome' => 'A', 'cognome' => "B{$i}", 'telefono' => "333000002{$i}",
+                'email' => 'a@example.com', 'data_nascita' => '1990-01-01', 'coach_id' => $coach->id, 'wallet_balance' => 0,
+            ]);
+        }
+
+        $controller = new AthleteController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/athletes')
+            ->withQueryParams(['page' => '1', 'per_page' => '2']);
+        $response = $controller->index($request, new Response());
+
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertCount(2, $body['data']);
+        $this->assertEquals(3, $body['meta']['total']);
+        $this->assertEquals(1, $body['meta']['current_page']);
+        $this->assertEquals(2, $body['meta']['last_page']);
+        $this->assertEquals(2, $body['meta']['per_page']);
     }
 
     public function testShowReturns404ForUnknownAthlete(): void

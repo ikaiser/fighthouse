@@ -34,6 +34,25 @@ class ExpenseControllerTest extends TestCase
         ]);
     }
 
+    public function testIndexReturnsPaginatedEnvelopeWhenPageRequested(): void
+    {
+        $athlete = $this->makeAthlete();
+        $service = new WalletService();
+        $service->createExpense($athlete, 10.0, '2026-01-01', null, 0);
+        $service->createExpense($athlete, 20.0, '2026-01-02', null, 0);
+        $service->createExpense($athlete, 30.0, '2026-01-03', null, 0);
+
+        $controller = new ExpenseController();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/expenses')
+            ->withQueryParams(['page' => '1', 'per_page' => '2']);
+        $response = $controller->index($request, new Response());
+
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertCount(2, $body['data']);
+        $this->assertEquals(3, $body['meta']['total']);
+        $this->assertEquals(2, $body['meta']['last_page']);
+    }
+
     public function testCreateExpenseAppliesCashback(): void
     {
         $athlete = $this->makeAthlete();

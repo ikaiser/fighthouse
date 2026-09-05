@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Athlete;
 use App\Models\Coach;
+use App\Support\Pagination;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -11,7 +12,8 @@ class AthleteController
 {
     public function index(Request $request, Response $response): Response
     {
-        $search = $request->getQueryParams()['q'] ?? null;
+        $params = $request->getQueryParams();
+        $search = $params['q'] ?? null;
         $query = Athlete::with('coach');
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -20,7 +22,14 @@ class AthleteController
                   ->orWhere('telefono', 'like', "%{$search}%");
             });
         }
-        $response->getBody()->write($query->orderBy('cognome')->get()->toJson());
+        $query->orderBy('cognome');
+
+        if (!empty($params['page'])) {
+            $response->getBody()->write(Pagination::toJson($query, $params));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write($query->get()->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 

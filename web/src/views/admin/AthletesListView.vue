@@ -10,7 +10,7 @@
 
     <div class="field">
       <label for="search">Cerca</label>
-      <input id="search" v-model="search" type="text" placeholder="Nome, cognome o telefono" @input="load" />
+      <input id="search" v-model="search" type="text" placeholder="Nome, cognome o telefono" @input="onSearch" />
     </div>
 
     <div class="card" style="padding: 0; overflow: hidden">
@@ -53,6 +53,16 @@
         </table>
       </div>
     </div>
+
+    <div v-if="lastPage > 1" class="user-row-actions" style="justify-content: flex-end; margin-top: var(--space-4)">
+      <button type="button" class="btn btn-secondary btn-sm" :disabled="page <= 1" @click="goToPage(page - 1)">
+        Precedente
+      </button>
+      <span class="hint">Pagina {{ page }} di {{ lastPage }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" :disabled="page >= lastPage" @click="goToPage(page + 1)">
+        Successiva
+      </button>
+    </div>
   </AdminLayout>
 </template>
 
@@ -64,12 +74,29 @@ import ActionMenu from '../../components/ActionMenu.vue'
 import { confirmDialog } from '../../composables/useConfirm'
 import { openAthleteForm } from '../../composables/useAthleteFormModal'
 
+const PER_PAGE = 20
+
 const athletes = ref([])
 const search = ref('')
+const page = ref(1)
+const lastPage = ref(1)
 
 async function load() {
-  const { data } = await apiClient.get('/athletes', { params: { q: search.value || undefined } })
-  athletes.value = data
+  const { data } = await apiClient.get('/athletes', {
+    params: { q: search.value || undefined, page: page.value, per_page: PER_PAGE },
+  })
+  athletes.value = data.data
+  lastPage.value = data.meta.last_page
+}
+
+function goToPage(target) {
+  page.value = target
+  load()
+}
+
+function onSearch() {
+  page.value = 1
+  load()
 }
 
 async function createAthlete() {

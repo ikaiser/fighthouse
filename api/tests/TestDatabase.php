@@ -38,6 +38,8 @@ class TestDatabase
             $t->increments('id');
             $t->string('username')->unique();
             $t->string('password_hash');
+            $t->unsignedInteger('failed_attempts')->default(0);
+            $t->timestamp('locked_until')->nullable();
             $t->timestamp('created_at')->useCurrent();
         });
 
