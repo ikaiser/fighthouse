@@ -40,7 +40,7 @@ class CoachController
 
         $coach = Coach::create([
             'nome' => $data['nome'], 'cognome' => $data['cognome'], 'telefono' => $data['telefono'],
-            'email' => $data['email'], 'wallet_balance' => 0,
+            'email' => $data['email'], 'data_nascita' => !empty($data['data_nascita']) ? $data['data_nascita'] : null, 'wallet_balance' => 0,
         ]);
 
         $response->getBody()->write($coach->toJson());
@@ -80,7 +80,7 @@ class CoachController
 
         $coach->update([
             'nome' => $data['nome'], 'cognome' => $data['cognome'], 'telefono' => $data['telefono'],
-            'email' => $data['email'],
+            'email' => $data['email'], 'data_nascita' => !empty($data['data_nascita']) ? $data['data_nascita'] : null,
         ]);
 
         $response->getBody()->write($coach->toJson());
@@ -121,6 +121,9 @@ class CoachController
             if (empty($data[$field])) {
                 $errors[] = "{$field} obbligatorio";
             }
+        }
+        if (!empty($data['data_nascita']) && !\DateTime::createFromFormat('Y-m-d', $data['data_nascita'])) {
+            $errors[] = 'data_nascita non valida';
         }
         return $errors;
     }

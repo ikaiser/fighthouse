@@ -49,6 +49,7 @@ class TestDatabase
             $t->string('cognome');
             $t->string('telefono')->unique();
             $t->string('email');
+            $t->date('data_nascita')->nullable();
             $t->decimal('wallet_balance', 10, 2)->default(0);
             $t->timestamps();
         });

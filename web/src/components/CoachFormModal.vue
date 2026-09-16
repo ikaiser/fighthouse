@@ -19,6 +19,10 @@
           <label for="cf-email">Email</label>
           <input id="cf-email" v-model="form.email" type="email" required />
         </div>
+        <div class="field">
+          <label for="cf-data-nascita">Data di nascita</label>
+          <input id="cf-data-nascita" v-model="form.data_nascita" type="date" />
+        </div>
 
         <div style="display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5)">
           <button type="button" class="btn btn-secondary" @click="cancel">Annulla</button>
@@ -38,7 +42,7 @@ import { apiClient } from '../api/client'
 import { resolveCoachForm, useCoachFormState } from '../composables/useCoachFormModal'
 
 const state = useCoachFormState()
-const form = reactive({ nome: '', cognome: '', telefono: '', email: '' })
+const form = reactive({ nome: '', cognome: '', telefono: '', email: '', data_nascita: '' })
 const saving = ref(false)
 const error = ref('')
 
@@ -53,11 +57,13 @@ watch(
       form.cognome = data.cognome
       form.telefono = data.telefono
       form.email = data.email
+      form.data_nascita = data.data_nascita || ''
     } else {
       form.nome = ''
       form.cognome = ''
       form.telefono = ''
       form.email = ''
+      form.data_nascita = ''
     }
   },
 )

@@ -32,6 +32,35 @@ class CoachControllerTest extends TestCase
 
         $this->assertEquals(201, $response->getStatusCode());
         $this->assertEquals(1, Coach::count());
+        $this->assertNull(Coach::first()->data_nascita);
+    }
+
+    public function testCreateCoachPersistsOptionalDataNascita(): void
+    {
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/coaches')
+            ->withParsedBody([
+                'nome' => 'Carlo', 'cognome' => 'Bianchi', 'telefono' => '3335551111',
+                'email' => 'c@example.com', 'data_nascita' => '1988-11-14',
+            ]);
+        $response = $controller->create($request, new Response());
+
+        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals('1988-11-14', Coach::first()->data_nascita->format('Y-m-d'));
+    }
+
+    public function testCreateCoachRejectsInvalidDataNascita(): void
+    {
+        $controller = new CoachController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/coaches')
+            ->withParsedBody([
+                'nome' => 'Carlo', 'cognome' => 'Bianchi', 'telefono' => '3335551111',
+                'email' => 'c@example.com', 'data_nascita' => 'not-a-date',
+            ]);
+        $response = $controller->create($request, new Response());
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals(0, Coach::count());
     }
 
     public function testCreateCoachRejectsDuplicatePhone(): void

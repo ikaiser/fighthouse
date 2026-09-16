@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Coach extends Model
 {
-    protected $fillable = ['nome', 'cognome', 'telefono', 'email', 'wallet_balance'];
+    protected $fillable = ['nome', 'cognome', 'telefono', 'email', 'data_nascita', 'wallet_balance'];
     protected $casts = [
         'wallet_balance' => 'float',
+        'data_nascita' => 'date:Y-m-d',
     ];
 
     public function athletes()

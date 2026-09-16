@@ -7,7 +7,10 @@
       <h1>{{ coach.nome }} {{ coach.cognome }}</h1>
       <button type="button" class="btn btn-secondary" @click="editCoach">Modifica</button>
     </div>
-    <p class="hint">Telefono: {{ coach.telefono }} — Email: {{ coach.email }}</p>
+    <p class="hint">
+      Telefono: {{ coach.telefono }} — Email: {{ coach.email }}
+      <template v-if="coach.data_nascita"> — Nato il: {{ coach.data_nascita }}</template>
+    </p>
 
     <div class="balance-hero" style="margin: var(--space-5) 0">
       <p class="balance-label">Saldo wallet</p>
