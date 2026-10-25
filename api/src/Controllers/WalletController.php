@@ -41,6 +41,27 @@ class WalletController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
+    public function creditCoach(Request $request, Response $response, array $args): Response
+    {
+        $coach = Coach::find($args['id']);
+        if (!$coach) {
+            $response->getBody()->write(json_encode(['error' => 'coach non trovato']));
+            return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
+        }
+
+        $data = (array) $request->getParsedBody();
+        $importo = (float) ($data['importo'] ?? 0);
+        if ($importo <= 0) {
+            $response->getBody()->write(json_encode(['error' => 'importo deve essere maggiore di zero']));
+            return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+        }
+
+        $this->walletService->creditCoachManually($coach, $importo);
+
+        $response->getBody()->write($this->buildCoachPayload($coach->fresh()));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
     public function lookup(Request $request, Response $response): Response
     {
         $data = (array) $request->getParsedBody();

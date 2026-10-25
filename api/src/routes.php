@@ -33,6 +33,7 @@ return function (App $app) {
         $group->put('/coaches/{id}', [CoachController::class, 'update']);
         $group->delete('/coaches/{id}', [CoachController::class, 'delete']);
         $group->get('/coaches/{id}/wallet', [WalletController::class, 'showCoach']);
+        $group->post('/coaches/{id}/wallet/credit', [WalletController::class, 'creditCoach']);
 
         $group->get('/expenses', [ExpenseController::class, 'index']);
         $group->post('/expenses', [ExpenseController::class, 'create']);

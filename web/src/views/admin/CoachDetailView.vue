@@ -17,6 +17,20 @@
       <p class="balance-value">{{ wallet.wallet_balance }}€</p>
     </div>
 
+    <h2>Accredita wallet</h2>
+    <div class="card">
+      <form style="display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap" @submit.prevent="creditWallet">
+        <div class="field" style="margin: 0">
+          <label for="cw-importo">Importo spesa (€)</label>
+          <input id="cw-importo" v-model="creditImporto" type="number" min="0.01" step="0.01" required />
+        </div>
+        <button type="submit" class="btn btn-primary" :disabled="crediting">
+          Accredita 5% ({{ creditPreview }}€)
+        </button>
+        <p v-if="creditError" class="error" style="margin: 0">{{ creditError }}</p>
+      </form>
+    </div>
+
     <h2>Storico movimenti wallet</h2>
     <div class="card">
       <ul>
@@ -48,7 +62,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from '../../api/client'
 import AdminLayout from '../../components/AdminLayout.vue'
@@ -59,6 +73,14 @@ const route = useRoute()
 const coach = ref(null)
 const wallet = ref({ wallet_balance: 0, transactions: [] })
 const athletes = ref([])
+const creditImporto = ref('')
+const crediting = ref(false)
+const creditError = ref('')
+
+const creditPreview = computed(() => {
+  const importo = Number(creditImporto.value)
+  return importo > 0 ? (importo * 0.05).toFixed(2) : '0.00'
+})
 
 onMounted(async () => {
   const id = route.params.id
@@ -75,5 +97,21 @@ onMounted(async () => {
 async function editCoach() {
   const updated = await openCoachForm(coach.value.id)
   if (updated) coach.value = updated
+}
+
+async function creditWallet() {
+  creditError.value = ''
+  crediting.value = true
+  try {
+    const { data } = await apiClient.post(`/coaches/${coach.value.id}/wallet/credit`, {
+      importo: Number(creditImporto.value),
+    })
+    wallet.value = data
+    creditImporto.value = ''
+  } catch (e) {
+    creditError.value = e.response?.data?.error || 'errore durante l\'accredito'
+  } finally {
+    crediting.value = false
+  }
 }
 </script>

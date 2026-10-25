@@ -19,6 +19,18 @@ class WalletService
         return floor($athlete->wallet_balance / self::REDEMPTION_STEP) * self::REDEMPTION_STEP;
     }
 
+    public function creditCoachManually(Coach $coach, float $importoBase): CoachWalletTransaction
+    {
+        if ($importoBase <= 0) {
+            throw new \InvalidArgumentException('importo deve essere maggiore di zero');
+        }
+
+        return DB::connection()->transaction(function () use ($coach, $importoBase) {
+            $accredito = round($importoBase * self::CASHBACK_RATE, 2);
+            return $this->recordCoachTransaction($coach, null, 'accredito', $accredito);
+        });
+    }
+
     public function createExpense(Athlete $athlete, float $importo, string $dataSpesa, ?string $note, float $walletUsato): Expense
     {
         if ($importo <= 0) {

@@ -122,4 +122,42 @@ class WalletControllerTest extends TestCase
         $this->assertEquals(50.0, $body['wallet_balance']);
         $this->assertArrayNotHasKey('max_redeemable', $body);
     }
+
+    public function testCreditCoachAddsFivePercentOfGivenAmount(): void
+    {
+        $coach = $this->makeCoach();
+
+        $controller = new WalletController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', "/api/coaches/{$coach->id}/wallet/credit")
+            ->withParsedBody(['importo' => 70]);
+        $response = $controller->creditCoach($request, new Response(), ['id' => $coach->id]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertEquals(3.5, $body['wallet_balance']);
+        $this->assertCount(1, $body['transactions']);
+    }
+
+    public function testCreditCoachRejectsZeroOrNegativeImporto(): void
+    {
+        $coach = $this->makeCoach();
+
+        $controller = new WalletController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', "/api/coaches/{$coach->id}/wallet/credit")
+            ->withParsedBody(['importo' => 0]);
+        $response = $controller->creditCoach($request, new Response(), ['id' => $coach->id]);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals(0.0, $coach->fresh()->wallet_balance);
+    }
+
+    public function testCreditCoachReturns404ForUnknownCoach(): void
+    {
+        $controller = new WalletController();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/coaches/999/wallet/credit')
+            ->withParsedBody(['importo' => 70]);
+        $response = $controller->creditCoach($request, new Response(), ['id' => 999]);
+
+        $this->assertEquals(404, $response->getStatusCode());
+    }
 }
