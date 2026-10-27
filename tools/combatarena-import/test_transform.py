@@ -58,6 +58,14 @@ def test_terms_follow_existing_fighthouse_style():
     assert size_term("48(US 13.5)") == "48 (US 13.5)"
 
 
+def test_aliases_match_fixes_on_fighthouse():
+    assert color_term("ROSSO-ROSSO") == "rosso tono su tono"
+    assert size_term("3 metri") == "3 mt"
+    assert size_term("5.3") == "5.3 mt"
+    plan = product_plan(_product(body_html="<p>Realizzata da Fairtex in esclusiva per Combat Arena.</p>"))
+    assert plan["description"] == "<p>Realizzata da Fairtex.</p>"
+
+
 def test_category_path():
     assert category_path("pantaloncini kick-thai", "Rival") == [("Muay thai", "Pantaloncini kick-thai")]
     assert category_path("guantoni", "Cleto Reyes") == [("Boxing", "Guantoni")]

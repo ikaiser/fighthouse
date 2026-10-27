@@ -15,11 +15,19 @@ BOTH_BRANDS = {"Fairtex"}
 OPTION_ATTRIBUTES = {"Color": "colore", "Taglia": "taglie"}
 
 _ALT_SUFFIX = re.compile(r"\s*-\s*Combat Arena\s*$", re.IGNORECASE)
+# Frase della descrizione che parla di Combat Arena come venditore.
+_DESCRIPTION_FIXES = {" in esclusiva per Combat Arena.": "."}
+
+# Valori scritti male o in due modi su Combat Arena, già corretti su FightHouse (27/10/2026).
+# «ROSSO-ROSSO» dei Rival RFX Guerrero è il rosso con il logo rosso (il «ROSSO» ha il logo nero).
+COLOR_ALIASES = {"rosso e rosso": "rosso tono su tono"}
+SIZE_ALIASES = {"3 metri": "3 mt", "4.5 metri": "4.5 mt", "5.3": "5.3 mt"}
 
 
 def color_term(value: str) -> str:
     """«BIANCO-ORO» → «bianco e oro», come i termini già su FightHouse."""
-    return " e ".join(part.strip() for part in value.strip().lower().split("-") if part.strip())
+    term = " e ".join(part.strip() for part in value.strip().lower().split("-") if part.strip())
+    return COLOR_ALIASES.get(term, term)
 
 
 def size_term(value: str) -> str:
@@ -28,7 +36,8 @@ def size_term(value: str) -> str:
     if value.upper() == "UNICA":
         return "Unica"
     value = re.sub(r"(\S)\(", r"\1 (", value)
-    return re.sub(r"\bOz\b", "oz", value, flags=re.IGNORECASE)
+    value = re.sub(r"\bOz\b", "oz", value, flags=re.IGNORECASE)
+    return SIZE_ALIASES.get(value, value)
 
 
 _TERM = {"colore": color_term, "taglie": size_term}
@@ -54,6 +63,12 @@ def _prices(variant: dict) -> tuple[str, str]:
     return price, ""
 
 
+def _fix_description(html: str) -> str:
+    for old, new in _DESCRIPTION_FIXES.items():
+        html = html.replace(old, new)
+    return html
+
+
 def product_plan(product: dict) -> dict:
     images = [
         {"src": image["src"], "alt": _ALT_SUFFIX.sub("", image.get("alt") or "")}
@@ -65,7 +80,7 @@ def product_plan(product: dict) -> dict:
         "source_handle": product["handle"],
         "sku": f"CA-{product['id']}",
         "name": product["title"].strip(),
-        "description": product["body_html"] or "",
+        "description": _fix_description(product["body_html"] or ""),
         "brand": product["vendor"],
         "categories": category_path(product["product_type"], product["vendor"]),
         "images": images,
